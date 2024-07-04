@@ -1,0 +1,12 @@
+<!-- templates/mailing/mailing_detail.html -->
+{% extends 'mailing/base.html' %}
+{% block content %}
+  <h1>Mailing Detail</h1>
+  <p>Start Time: {{ object.start_time }}</p>
+  <p>Periodicity: {{ object.get_periodicity_display }}</p>
+  <p>Status: {{ object.get_status_display }}</p>
+  <!-- Дополнительные поля для вывода -->
+  <a href="{% url 'mailing:mailing_update' object.pk %}">Edit</a>
+  <a href="{% url 'mailing:mailing_delete' object.pk %}">Delete</a>
+  <a href="{% url 'mailing:mailing_list' %}">Back to list</a>
+{% endblock %}

@@ -1,0 +1,25 @@
+<!-- templates/mailing/mailing_list.html -->
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+    <h1>Список рассылок</h1>
+    <ul class="list-group">
+        {% for mailing in object_list %}
+            <li class="list-group-item">
+                <h3>Рассылка №{{ mailing.id }} - {{ mailing.status }}</h3>
+                <p><strong>Время начала:</strong> {{ mailing.start_time }}</p>
+                <p><strong>Периодичность:</strong> {{ mailing.get_periodicity_display }}</p>
+                <p><strong>Сообщение:</strong> {{ mailing.message.subject }}</p>
+                <p><strong>Клиенты:</strong> {{ mailing.clients.all|join:", " }}</p>
+                <div>
+                    <a href="{% url 'mailing:mailing_detail' mailing.pk %}" class="btn btn-primary">Детали</a>
+                    <a href="{% url 'mailing:mailing_update' mailing.pk %}" class="btn btn-secondary">Редактировать</a>
+                    <a href="{% url 'mailing:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
+                </div>
+            </li>
+        {% empty %}
+            <li class="list-group-item">Пока нет рассылок.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'mailing:mailing_create' %}" class="btn btn-success mt-3">Создать новую рассылку</a>
+{% endblock %}

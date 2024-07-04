@@ -1,0 +1,11 @@
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+  <h1>Детали попытки рассылки №{{ object.id }}</h1>
+  <p><strong>Время создания:</strong> {{ object.timestamp }}</p>
+  <p><strong>Статус:</strong> {{ object.status }}</p>
+  <p><strong>Ответ сервера:</strong> {{ object.server_response }}</p>
+  <a href="{% url 'mailing:mailing_attempt_update' mailing_id=object.mailing.id pk=object.pk %}" class="btn btn-secondary">Редактировать</a>
+  <a href="{% url 'mailing:mailing_attempt_delete' mailing_id=object.mailing.id pk=object.pk %}" class="btn btn-danger">Удалить</a>
+  <a href="{% url 'mailing:mailing_attempt_list' mailing_id=object.mailing.id %}" class="btn btn-secondary mt-3">Назад к списку попыток рассылок</a>
+{% endblock %}

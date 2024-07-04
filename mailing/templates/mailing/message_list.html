@@ -1,0 +1,19 @@
+<!-- templates/mailing/message_list.html -->
+{% extends 'mailing/base.html' %}
+{% block content %}
+  <h1>Message List</h1>
+  <ul>
+    {% for message in messages %}
+      <li>
+        <h3>{{ message.subject }}</h3>
+        <p>{{ message.body }}</p>
+        <a href="{% url 'mailing:message_detail' message.pk %}">Detail</a>
+        <a href="{% url 'mailing:message_update' message.pk %}">Edit</a>
+        <a href="{% url 'mailing:message_delete' message.pk %}">Delete</a>
+      </li>
+    {% empty %}
+      <li>No messages yet.</li>
+    {% endfor %}
+  </ul>
+  <a href="{% url 'mailing:message_create' %}">Create New Message</a>
+{% endblock %}

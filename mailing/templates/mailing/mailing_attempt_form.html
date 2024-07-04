@@ -1,0 +1,11 @@
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+  <h1>Создание/Редактирование попытки рассылки</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+  </form>
+  <a href="{% url 'mailing:mailing_attempt_list' mailing_id=mailing_id %}" class="btn btn-secondary mt-3">Отмена</a>
+{% endblock %}

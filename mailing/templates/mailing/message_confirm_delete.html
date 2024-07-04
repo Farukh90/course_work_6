@@ -1,0 +1,11 @@
+<!-- templates/mailing/message_confirm_delete.html -->
+{% extends 'mailing/base.html' %}
+{% block content %}
+  <h1>Delete Message</h1>
+  <p>Are you sure you want to delete "{{ object.subject }}"?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Confirm</button>
+    <a href="{% url 'mailing:message_detail' object.pk %}">Cancel</a>
+  </form>
+{% endblock %}
