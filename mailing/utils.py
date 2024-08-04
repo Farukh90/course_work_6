@@ -1,18 +1,18 @@
 import logging
+import smtplib
+
 from django.utils import timezone
 import pytz
-from smtplib import SMTPException
 from mailing.models import Mailing, MailingAttempt
 from django.core.mail import send_mail
 from django.conf import settings
 
-
 logger = logging.getLogger('mailing')
+
 
 def check_and_send_mailings():
     now = timezone.now()
     msk_time = now.astimezone(pytz.timezone(settings.TIME_ZONE))
-
 
     mailings = Mailing.objects.filter(status__in=['created', 'started'])
     logger.debug(f'Найдено {mailings.count()} рассылок для обработки.')
@@ -24,12 +24,13 @@ def check_and_send_mailings():
 
         if mailing.status == 'created':
             if should_send_mailing(mailing, msk_time):
-                send_mailing(mailing)
+                send_mailing(mailing.id)
         elif mailing.status == 'started':
             if mailing.actual_end_time and mailing.actual_end_time <= msk_time:
                 mailing.complete_mailing()
             elif should_send_mailing(mailing, msk_time):
-                send_mailing(mailing)
+                send_mailing(mailing.id)
+
 
 def should_send_mailing(mailing, now):
     last_attempt = mailing.attempts.order_by('-timestamp').first()
@@ -38,7 +39,8 @@ def should_send_mailing(mailing, now):
 
     last_attempt_timestamp_msk = last_attempt.timestamp.astimezone(pytz.timezone(settings.TIME_ZONE))
     delta = now - last_attempt_timestamp_msk
-    logger.debug(f'Последняя попытка рассылки {mailing.description}: {last_attempt_timestamp_msk}, {delta.days} дней назад.')
+    logger.debug(
+        f'Последняя попытка рассылки {mailing.description}: {last_attempt_timestamp_msk}, {delta.days} дней назад.')
     if mailing.periodicity == 'daily' and delta.days >= 1:
         return True
     elif mailing.periodicity == 'weekly' and delta.days >= 7:
@@ -48,40 +50,71 @@ def should_send_mailing(mailing, now):
 
     return False
 
-def send_mailing(mailing):
-    recipients = mailing.clients.all()
-    subject = mailing.message.subject
-    body = mailing.message.body
 
-    for client in recipients:
-        try:
-            # Отправляем письмо
-            server_response = send_mail(
-                subject=subject,
-                message=body,
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[client.email],
-                fail_silently=False,
-            )
-            status = 'success'
-            logger.info(f'Письмо успешно отправлено клиенту {client.email} для рассылки {mailing.description}.')
-        except SMTPException as e:
-            # При ошибке почтовика получаем ответ сервера - ошибка, которая записывается в e
-            server_response = str(e)
-            status = 'failed'
-            logger.error(f'Ошибка при отправке письма клиенту {client.email} для рассылки {mailing.description}: {server_response}')
 
-        # Записываем попытку рассылки
+def send_mailing(mailing_id):
+    mailing = Mailing.objects.get(id=mailing_id)
+    try:
+        # Отправляем рассылку
+        server_response = send_mail(
+            subject=mailing.message.subject,
+            message=mailing.message.body,
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[client.email for client in mailing.clients.all()],
+            fail_silently=False
+        )
+        # Создаем запись о попытке рассылки если все ок
         MailingAttempt.objects.create(
             mailing=mailing,
-            status=status,
-            server_response=server_response,
-            client_email=client.email
+            status='success',
+            server_response=str(server_response)
         )
+        mailing.start_mailing()
+        logger.info(f'Рассылка {mailing.description} начата.')
 
-    mailing.start_mailing()
-    logger.info(f'Рассылка {mailing.description} начата.')
+    except smtplib.SMTPException as e:
+        # Создаем запись о попытке рассылки в случае ошибки
+        MailingAttempt.objects.create(
+            mailing=mailing,
+            status='failed',
+            server_response=str(e)
+        )
+        logger.error(f'Ошибка при попытке рассылки произошла ошибка {e}')
 
-# Пример использования функций:
+
+import json
+import os.path
+
+
+def create_contact_dict(name: str, phone: str, message: str) -> dict:
+    contact_data = {"name": name, "phone": phone, "message": message}
+
+    return contact_data
+
+
+def read_JSON_data(file_path: str) -> list:
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except UnicodeDecodeError as e:
+            print(f"ошибка {e}")
+            with open(file_path, "r", encoding="windows-1251") as f:
+                data = json.load(f)
+
+    else:
+        data = []
+        print(f"файл {file_path} не существует")
+    return data
+
+
+def write_JSON_data(file_path: str, data) -> None:
+    with open(file_path, "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
+
+
+
+
 if __name__ == "__main__":
     check_and_send_mailings()

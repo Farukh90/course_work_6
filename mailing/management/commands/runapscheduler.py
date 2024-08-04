@@ -25,13 +25,11 @@ class Command(BaseCommand):
 
         scheduler.add_job(
             check_and_send_mailings,
-            trigger=IntervalTrigger(seconds=10),
+            trigger=IntervalTrigger(seconds=5),
             id="check_mailings",
             seconds=10,
             max_instances=1,
             replace_existing=True,
-            # coalesce=True,
-            # misfire_grace_time=60,
 
         )
 
@@ -39,9 +37,9 @@ class Command(BaseCommand):
 
         try:
             logger.info("starting scheduler")
-            print('starting scheduler')
+            print('шедулер запущен')
             scheduler.start()
         except KeyboardInterrupt:
-            logger.info("stopping scheduler")
+            logger.info("шедулер остановлен")
             scheduler.shutdown()
-            logger.info("scheduler shut down successfully")
+            logger.info("шедулер остановлен успешно")

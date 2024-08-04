@@ -1,0 +1,25 @@
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+{#    <h1>Главная страница</h1>#}
+
+    <div class="statistics">
+        <h2>Статистика</h2>
+        <p><strong>Количество рассылок всего:</strong> {{ total_mailings }}</p>
+        <p><strong>Количество активных рассылок:</strong> {{ active_mailings }}</p>
+        <p><strong>Количество уникальных клиентов для рассылок:</strong> {{ unique_clients_count }}</p>
+    </div>
+
+    <div class="random-articles">
+        <h2>Случайные статьи</h2>
+        <ul>
+            {% for article in random_articles %}
+                <li>
+                    <h3>{{ article.title }}</h3>
+                    <p>{{ article.content|truncatewords:20 }}</p>
+                    <a href="{% url 'blog:article_detail' article.pk %}">Читать далее</a>  <!-- Замените 'blog:article_detail' на правильное имя URL вашей статьи -->
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

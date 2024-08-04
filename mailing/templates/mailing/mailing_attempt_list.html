@@ -5,9 +5,9 @@
   <ul class="list-group">
     {% for attempt in attempts %}
       <li class="list-group-item">
-        <h3>Попытка №{{ attempt.id }} - {{ attempt.status }}</h3>
+        <h3>Попытка №{{ attempt.id }} - {{ attempt.get_status_display }}</h3>
         <p><strong>Время создания:</strong> {{ attempt.timestamp }}</p>
-        <p><strong>Статус:</strong> {{ attempt.status }}</p>
+        <p><strong>Статус:</strong> {{ attempt.get_status_display }}</p>
         <p><strong>Ответ сервера:</strong> {{ attempt.server_response }}</p>
         <div>
           <a href="{% url 'mailing:mailing_attempt_detail' mailing_id=attempt.mailing.id pk=attempt.pk %}" class="btn btn-primary">Детали</a>
@@ -19,6 +19,6 @@
       <li class="list-group-item">Пока нет попыток рассылок.</li>
     {% endfor %}
   </ul>
-  <a href="{% url 'mailing:mailing_attempt_create' mailing_id=mailing_id %}" class="btn btn-success mt-3">Создать новую попытку рассылки</a>
+ <a href="{% url 'mailing:run_mailing_command' mailing_id=mailing_id %}" class="btn btn-success mt-3">Выполнить рассылку</a>
   <a href="{% url 'mailing:mailing_list' %}" class="btn btn-secondary mt-3">Назад к списку рассылок</a>
 {% endblock %}

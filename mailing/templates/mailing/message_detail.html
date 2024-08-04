@@ -1,10 +1,10 @@
 <!-- templates/mailing/message_detail.html -->
 {% extends 'mailing/base.html' %}
 {% block content %}
-  <h1>Message Detail</h1>
+  <h1>Подробности сообщения</h1>
   <p>Subject: {{ object.subject }}</p>
   <p>Body: {{ object.body }}</p>
-  <a href="{% url 'mailing:message_update' object.pk %}">Edit</a>
-  <a href="{% url 'mailing:message_delete' object.pk %}">Delete</a>
-  <a href="{% url 'mailing:message_list' %}">Back to list</a>
+  <a href="{% url 'mailing:message_update' object.pk %}">Редактировать</a>
+  <a href="{% url 'mailing:message_delete' object.pk %}">Удалить</a>
+  <a href="{% url 'mailing:message_list' %}">Назад</a>
 {% endblock %}

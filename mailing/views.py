@@ -1,8 +1,34 @@
-from django.shortcuts import render, redirect
-from django.shortcuts import render, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.management import call_command
+from django.http import HttpResponseNotFound, HttpResponseForbidden
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy, reverse
+from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+
+from .forms import ClientForm, MessageForm, MailingForm, MailingAttemptForm
 from .models import Client, Message, Mailing, MailingAttempt
+from .utils import create_contact_dict, read_JSON_data, write_JSON_data
+
+
+class HomePageView(View):
+    def get(self, request, *args, **kwargs):
+        total_mailings = Mailing.objects.count()
+        active_mailings = Mailing.objects.filter(status='started').count()
+        unique_clients_count = Client.objects.distinct().count()
+        # random_articles = Article.objects.order_by('?')[:3]
+
+        context = {
+            'total_mailings': total_mailings,
+            'active_mailings': active_mailings,
+            'unique_clients_count': unique_clients_count,
+            # 'random_articles': random_articles
+        }
+
+        return render(request, 'mailing/index.html', context)
+
+
 
 class ClientListView(ListView):
     model = Client
@@ -16,15 +42,15 @@ class ClientDetailView(DetailView):
 
 class ClientCreateView(CreateView):
     model = Client
+    form_class = ClientForm
     template_name = 'mailing/client_form.html'
-    fields = ['email', 'full_name', 'comment']
     success_url = reverse_lazy('mailing:client_list')
 
 
 class ClientUpdateView(UpdateView):
     model = Client
+    form_class = ClientForm
     template_name = 'mailing/client_form.html'
-    fields = ['email', 'full_name', 'comment']
     success_url = reverse_lazy('mailing:client_list')
 
 
@@ -47,50 +73,59 @@ class MessageDetailView(DetailView):
 
 class MessageCreateView(CreateView):
     model = Message
+    form_class = MessageForm
     template_name = 'mailing/message_form.html'
-    fields = ['subject', 'body']
     success_url = reverse_lazy('mailing:message_list')
+
+    def form_valid(self, form):
+        form.save()
+        return redirect('mailing:message_list')
 
 
 class MessageUpdateView(UpdateView):
     model = Message
+    form_class = MessageForm
     template_name = 'mailing/message_form.html'
-    fields = ['subject', 'body']
-    success_url = reverse_lazy('mailing:client_list')
+    success_url = reverse_lazy('mailing:message_list')
 
 
 class MessageDeleteView(DeleteView):
     model = Message
     template_name = 'mailing/message_confirm_delete.html'
-    success_url = reverse_lazy('mailing:client_list')
+    success_url = reverse_lazy('mailing:message_list')
 
 
-
-class MailingListView(ListView):
+class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
     template_name = 'mailing/mailing_list.html'
+    context_object_name = 'mailings'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponseNotFound("<h1>404 Not Found</h1><p>Страница не найдена. Пожалуйста, авторизуйтесь для доступа.</p>")
+        return super().dispatch(request, *args, **kwargs)
 
 
-class MailingDetailView(DetailView):
+class MailingDetailView(LoginRequiredMixin, DetailView):
     model = Mailing
     template_name = 'mailing/mailing_detail.html'
 
 
-class MailingCreateView(CreateView):
+class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailing
+    form_class = MailingForm
     template_name = 'mailing/mailing_form.html'
-    fields = ['description', 'start_time', 'actual_end_time', 'periodicity', 'message', 'clients']
     success_url = reverse_lazy('mailing:mailing_list')
 
 
-class MailingUpdateView(UpdateView):
+class MailingUpdateView(LoginRequiredMixin, UpdateView):
     model = Mailing
+    form_class = MailingForm
     template_name = 'mailing/mailing_form.html'
-    fields = ['description', 'start_time', 'actual_end_time', 'periodicity', 'message', 'clients']
     success_url = reverse_lazy('mailing:mailing_list')
 
 
-class MailingDeleteView(DeleteView):
+class MailingDeleteView(LoginRequiredMixin, DeleteView):
     model = Mailing
     template_name = 'mailing/mailing_confirm_delete.html'
     success_url = reverse_lazy('mailing:mailing_list')
@@ -118,12 +153,12 @@ class MailingAttemptDetailView(DetailView):
 
 class MailingAttemptCreateView(CreateView):
     model = MailingAttempt
+    form_class = MailingAttemptForm
     template_name = 'mailing/mailing_attempt_form.html'
-    fields = []
 
     def get_initial(self):
         initial = super().get_initial()
-        initial['mailing_id'] = self.kwargs['mailing_id']
+        initial['mailing'] = self.kwargs['mailing_id']
         return initial
 
     def form_valid(self, form):
@@ -137,7 +172,7 @@ class MailingAttemptCreateView(CreateView):
 
 class MailingAttemptUpdateView(UpdateView):
     model = MailingAttempt
-    fields = ['status', 'server_response']
+    form_class = MailingAttemptForm
     template_name = 'mailing/mailing_attempt_form.html'
 
     def get_context_data(self, **kwargs):
@@ -155,45 +190,42 @@ class MailingAttemptDeleteView(DeleteView):
     success_url = reverse_lazy('mailing:mailing_list')
 
 
-# Представление для запуска рассылки
-def start_mailing(request, pk):
-    mailing = get_object_or_404(Mailing, pk=pk)
-    mailing.start_mailing()
-    return redirect('mailing:mailing_detail', pk=pk)
+
+contacts_base_file = r"contacts.json"
+
+class ContactView(View):
+    template_name = "mailing/contacts.html"
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        name = request.POST.get("name")
+        email = request.POST.get("phone")
+        message = request.POST.get("message")
+        print(f"{name} ({email}): {message}")
+
+        new_contact = create_contact_dict(name, email, message)
+
+        contacts_base = read_JSON_data(contacts_base_file)
+
+        contacts_base.append(new_contact)
+
+        write_JSON_data(contacts_base_file, contacts_base)
+
+        return render(request, self.template_name)
 
 
-# Представление для завершения рассылки
-def complete_mailing(request, pk):
-    mailing = get_object_or_404(Mailing, pk=pk)
-    mailing.complete_mailing()
-    return redirect('mailing:mailing_detail', pk=pk)
+class RunMailingCommandView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        mailing_id = kwargs.get('mailing_id')
+        mailing = get_object_or_404(Mailing, id=mailing_id)
 
+        # Run the custom management command
+        try:
+            call_command('check_and_send_mailings')
+            messages.success(request, "Команда выполнена успешно.")
+        except Exception as e:
+            messages.error(request, f"Произошла ошибка при выполнении команды: {e}")
 
-
-def create_mailing(request):
-    if request.method == 'POST':
-        form = MailingForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('mailing_list')
-    else:
-        form = MailingForm()
-    return render(request, 'mailing/mailing_form.html', {'form': form})
-
-def update_mailing(request, pk):
-    mailing = get_object_or_404(Mailing, pk=pk)
-    if request.method == 'POST':
-        form = MailingForm(request.POST, instance=mailing)
-        if form.is_valid():
-            form.save()
-            return redirect('mailing_list')
-    else:
-        form = MailingForm(instance=mailing)
-    return render(request, 'mailing/mailing_form.html', {'form': form})
-
-def delete_mailing(request, pk):
-    mailing = get_object_or_404(Mailing, pk=pk)
-    if request.method == 'POST':
-        mailing.delete()
-        return redirect('mailing_list')
-    return render(request, 'mailing/mailing_confirm_delete.html', {'mailing': mailing})
+        return redirect('mailing:mailing_list')

@@ -2,17 +2,17 @@ from django.db import models
 from django.utils import timezone
 
 class Client(models.Model):
-    email = models.EmailField(unique=True)
-    full_name = models.CharField(max_length=255)
-    comment = models.TextField(blank=True, null=True)
+    email = models.EmailField(verbose_name="e-mail адрес", unique=True)
+    full_name = models.CharField(verbose_name="Ф.И.О клиента", max_length=255)
+    comment = models.TextField(verbose_name="комментарий", blank=True, null=True)
 
     def __str__(self):
         return self.full_name
 
 
 class Message(models.Model):
-    subject = models.CharField(max_length=255)
-    body = models.TextField()
+    subject = models.CharField(verbose_name="Тема", max_length=255)
+    body = models.TextField(verbose_name="Сообщение", blank=True, null=True)
 
     def __str__(self):
         return self.subject
@@ -26,18 +26,17 @@ class Mailing(models.Model):
     ]
 
     PERIODICITY_CHOICES = [
-        ('daily', 'Daily'),
-        ('weekly', 'Weekly'),
-        ('monthly', 'Monthly'),
+        ('daily', 'Ежедневно'),
+        ('weekly', 'Еженедельно'),
+        ('monthly', 'Ежемесячно'),
     ]
-    description = models.CharField(max_length=255, blank=True, null=True)
-    start_time = models.DateTimeField()
-    periodicity = models.CharField(max_length=10, choices=PERIODICITY_CHOICES)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='created')
-    message = models.ForeignKey(Message, on_delete=models.CASCADE)
-    clients = models.ManyToManyField(Client)
-    actual_start_time = models.DateTimeField(blank=True, null=True)
-    actual_end_time = models.DateTimeField(blank=True, null=True)
+    description = models.CharField(verbose_name="описание", max_length=255, blank=True, null=True)
+    start_time = models.DateTimeField(verbose_name="дата начала рассылки")
+    periodicity = models.CharField(verbose_name="периодичность", max_length=10, choices=PERIODICITY_CHOICES)
+    status = models.CharField(verbose_name="статус", max_length=10, choices=STATUS_CHOICES, default='created')
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, verbose_name="сообщение")
+    clients = models.ManyToManyField(Client, verbose_name="клиенты")
+    actual_end_time = models.DateTimeField(verbose_name="дата завершения рассылки", blank=True, null=True)
 
     def __str__(self):
         return f'Mailing {self.id} - {self.status}'
@@ -68,6 +67,8 @@ class MailingAttempt(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
     server_response = models.TextField(blank=True, null=True)
-    client_email = models.CharField(max_length=255, blank=True, null=True)
+
     def __str__(self):
         return f'Attempt {self.id} - {self.status}'
+
+

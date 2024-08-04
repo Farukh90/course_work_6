@@ -6,4 +6,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         check_and_send_mailings()
-        self.stdout.write(self.style.SUCCESS('Successfully checked and send mailings'))
+        self.stdout.write(self.style.SUCCESS('рассылки проверены и отправлены'))

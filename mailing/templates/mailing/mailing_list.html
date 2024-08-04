@@ -1,12 +1,45 @@
-<!-- templates/mailing/mailing_list.html -->
 {% extends 'mailing/base.html' %}
-
+{% load my_tags %}
 {% block content %}
+    <!-------------->
+    <div class="mt-5">
+        <h2>Создать новые объекты:</h2>
+        <div>
+            <h3>Форма клиента:</h3>
+            <form method="post" action="{% url 'mailing:client_create' %}">
+                {% csrf_token %}
+                {{ client_form.as_p }}
+                <button type="submit" class="btn btn-primary">Создать клиента</button>
+            </form>
+        </div>
+
+        <div>
+            <h3>Форма сообщения:</h3>
+            <form method="post" action="{% url 'mailing:message_create' %}">
+                {% csrf_token %}
+                {{ message_form.as_p }}
+                <button type="submit" class="btn btn-primary">Создать сообщение</button>
+            </form>
+        </div>
+
+        <div>
+            <h3>Форма рассылки:</h3>
+            <form method="post" action="{% url 'mailing:mailing_create' %}">
+                {% csrf_token %}
+                {{ mailing_form.as_p }}
+                <button type="submit" class="btn btn-primary">Создать рассылку</button>
+            </form>
+        </div>
+    
+    </div>
+    <!-------------->
+    
+    <!-------------->
     <h1>Список рассылок</h1>
     <ul class="list-group">
-        {% for mailing in object_list %}
+        {% for mailing in mailings %}
             <li class="list-group-item">
-                <h3>Рассылка №{{ mailing.id }} - {{ mailing.status }}</h3>
+                <h3>Рассылка №{{ mailing.id }} - {{ mailing.get_status_display }}</h3>
                 <p><strong>Время начала:</strong> {{ mailing.start_time }}</p>
                 <p><strong>Периодичность:</strong> {{ mailing.get_periodicity_display }}</p>
                 <p><strong>Сообщение:</strong> {{ mailing.message.subject }}</p>
@@ -15,11 +48,16 @@
                     <a href="{% url 'mailing:mailing_detail' mailing.pk %}" class="btn btn-primary">Детали</a>
                     <a href="{% url 'mailing:mailing_update' mailing.pk %}" class="btn btn-secondary">Редактировать</a>
                     <a href="{% url 'mailing:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
+                    <a href="{% url 'mailing:mailing_attempt_list' mailing.pk %}" class="btn btn-warning">Попытки рассылки</a>
                 </div>
             </li>
         {% empty %}
             <li class="list-group-item">Пока нет рассылок.</li>
         {% endfor %}
     </ul>
+
     <a href="{% url 'mailing:mailing_create' %}" class="btn btn-success mt-3">Создать новую рассылку</a>
+    <!-------------->
+    
+    
 {% endblock %}
