@@ -21,7 +21,7 @@ class Message(models.Model):
 class Mailing(models.Model):
     STATUS_CHOICES = [
         ('created', 'Создана'),
-        ('started', 'Запущена'),
+        ('started', 'Активна'),
         ('completed', 'Завершена')
     ]
 

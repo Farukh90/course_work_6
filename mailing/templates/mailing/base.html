@@ -185,17 +185,16 @@
 <main>
 
     <section class="py-5 text-center container">
-        <div class="row py-lg-5">
+        <div class="row py-lg-0">
             <div class="col-lg-6 col-md-8 mx-auto">
                 <p>
-                    <a href="{% url 'mailing:mailing_list' %}" class="btn btn-primary my-2">Рассылки</a>
-                    <a href="{% url 'blog:blog_list' %}" class="btn btn-secondary my-2">Блог</a>
-                    <a href="{% url 'mailing:index' %}" class="btn btn-danger my-2">Главная</a>
+                    <a href="{% url 'mailing:mailing_list' %}" class="btn btn-primary my-0">Рассылки</a>
+                    <a href="{% url 'blog:blog_list' %}" class="btn btn-secondary my-0">Блог</a>
+                    <a href="{% url 'mailing:index' %}" class="btn btn-danger my-0">Главная</a>
                 </p>
             </div>
         </div>
     </section>
-
 
 
 </main>
@@ -208,17 +207,38 @@
 </main>
 
 
-<footer class="text-body-secondary py-5">
+<footer class="text-muted py-5">
     <div class="container">
         <p class="float-end mb-1">
-            <a href="#">Back to top</a>
+            <a href="#">Ничего не делает</a>
         </p>
-        <p class="mb-1">Album example is &copy; Bootstrap, but please download and customize it for yourself!</p>
-        <p class="mb-0">New to Bootstrap? <a href="/">Visit the homepage</a> or read our <a
-                href="/docs/5.3/getting-started/introduction/">getting started guide</a>.</p>
+        <p class="mb-1">FJ's_course_project_6</p>
+        <p class="mb-0">
+            <span>Московское время: </span>
+            <span id="moscow-time"></span>
+        </p>
     </div>
 </footer>
+
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
+
+<script>
+    function updateMoscowTime() {
+        const moscowTime = moment().tz('Europe/Moscow');
+        const hours = moscowTime.hours().toString().padStart(2, '0');
+        const minutes = moscowTime.minutes().toString().padStart(2, '0');
+        const seconds = moscowTime.seconds().toString().padStart(2, '0');
+        document.getElementById('moscow-time').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+
+    setInterval(updateMoscowTime, 1000);
+    updateMoscowTime(); // Initial call to set the time immediately
+</script>
 
 </body>
 </html>

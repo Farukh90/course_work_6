@@ -1,24 +1,38 @@
 {% extends 'mailing/base.html' %}
 
 {% block content %}
-  <h1>Список попыток рассылок</h1>
-  <ul class="list-group">
-    {% for attempt in attempts %}
-      <li class="list-group-item">
-        <h3>Попытка №{{ attempt.id }} - {{ attempt.get_status_display }}</h3>
-        <p><strong>Время создания:</strong> {{ attempt.timestamp }}</p>
-        <p><strong>Статус:</strong> {{ attempt.get_status_display }}</p>
-        <p><strong>Ответ сервера:</strong> {{ attempt.server_response }}</p>
-        <div>
-          <a href="{% url 'mailing:mailing_attempt_detail' mailing_id=attempt.mailing.id pk=attempt.pk %}" class="btn btn-primary">Детали</a>
-          <a href="{% url 'mailing:mailing_attempt_update' mailing_id=attempt.mailing.id pk=attempt.pk %}" class="btn btn-secondary">Редактировать</a>
-          <a href="{% url 'mailing:mailing_attempt_delete' mailing_id=attempt.mailing.id pk=attempt.pk %}" class="btn btn-danger">Удалить</a>
-        </div>
-      </li>
-    {% empty %}
-      <li class="list-group-item">Пока нет попыток рассылок.</li>
-    {% endfor %}
-  </ul>
- <a href="{% url 'mailing:run_mailing_command' mailing_id=mailing_id %}" class="btn btn-success mt-3">Выполнить рассылку</a>
-  <a href="{% url 'mailing:mailing_list' %}" class="btn btn-secondary mt-3">Назад к списку рассылок</a>
+    <h1>Список попыток рассылки: {{ mailing.description }}</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Время создания</th>
+                <th>Статус</th>
+                <th>Ответ сервера</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attempt in attempts %}
+                <tr>
+                    <td>{{ attempt.id }}</td>
+                    <td>{{ attempt.timestamp }}</td>
+                    <td>{{ attempt.get_status_display }}</td>
+                    <td>{{ attempt.server_response }}</td>
+                    <td>
+                        <a href="{% url 'mailing:mailing_attempt_detail' mailing_id=attempt.mailing.id pk=attempt.pk %}" class="btn btn-primary btn-sm">Детали</a>
+                        <a href="{% url 'mailing:mailing_attempt_update' mailing_id=attempt.mailing.id pk=attempt.pk %}" class="btn btn-secondary btn-sm">Редактировать</a>
+                        <a href="{% url 'mailing:mailing_attempt_delete' mailing_id=attempt.mailing.id pk=attempt.pk %}" class="btn btn-danger btn-sm">Удалить</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">Пока нет попыток рассылок.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'mailing:run_mailing_command' mailing_id=mailing_id %}" class="btn btn-success mt-3">Выполнить рассылку по расписанию</a>
+    <a href="{% url 'mailing:run_mailing_hard_command' mailing_id=mailing_id %}" class="btn btn-success mt-3">Выполнить принудительную рассылку</a>
+    <a href="{% url 'mailing:mailing_list' %}" class="btn btn-secondary mt-3">Назад к списку рассылок</a>
 {% endblock %}

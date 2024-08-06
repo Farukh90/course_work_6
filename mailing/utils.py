@@ -31,6 +31,20 @@ def check_and_send_mailings():
             elif should_send_mailing(mailing, msk_time):
                 send_mailing(mailing.id)
 
+def check_and_send_mailings_hard():
+    mailings = Mailing.objects.filter(status__in=['created', 'started'])
+    logger.debug(f'Найдено {mailings.count()} рассылок для обработки.')
+
+    for mailing in mailings:
+        try:
+            if mailing.status != 'completed':
+                logger.debug(f'Отправка рассылки {mailing.id} со статусом {mailing.status}.')
+                send_mailing(mailing.id)
+            else:
+                logger.debug(f'Рассылка {mailing.id} уже завершена.')
+        except Exception as e:
+            logger.error(f'Ошибка при обработке рассылки {mailing.id}: {str(e)}', exc_info=True)
+
 
 def should_send_mailing(mailing, now):
     last_attempt = mailing.attempts.order_by('-timestamp').first()

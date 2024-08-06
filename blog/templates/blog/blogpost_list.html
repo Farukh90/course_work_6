@@ -14,9 +14,11 @@
             {% for blog in blogpost_list %}
             <div class="col-6 mb-4">
                 <div class="card shadow-sm">
+                    <img src="{{ object.photo | media_filter }}">
                     <div class="card-body">
                         <h5 class="card-title">{{ blog.title }}</h5>
                         <p class="card-text">{{ blog.content | slice:":150" }}...</p>
+                        <p class="card-text">Просмотров: {{ blog.views_count }}</p>
                         <div class="btn-group">
                             <a class="btn btn-primary" href="{% url 'blog:blog_detail' blog.slug %}" role="button">Посмотреть</a>
                             <a class="btn btn-warning" href="{% url 'blog:blog_edit' blog.slug %}" role="button">Редактировать</a>

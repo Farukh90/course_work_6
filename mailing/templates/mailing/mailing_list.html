@@ -2,62 +2,82 @@
 {% load my_tags %}
 {% block content %}
     <!-------------->
-    <div class="mt-5">
-        <h2>Создать новые объекты:</h2>
-        <div>
-            <h3>Форма клиента:</h3>
-            <form method="post" action="{% url 'mailing:client_create' %}">
-                {% csrf_token %}
-                {{ client_form.as_p }}
-                <button type="submit" class="btn btn-primary">Создать клиента</button>
-            </form>
-        </div>
+    <div class="mt-5 text-center">
+        <h3>Добавляйте клиентов и сообщения для новых рассылок:</h3>
+        <div class="d-flex justify-content-center">
+            <div class="form-group mx-3">
+                <form method="post" action="{% url 'mailing:client_create' %}">
+                    {% csrf_token %}
+                    {{ client_form.as_p }}
+                    <button type="submit" class="btn btn-primary">Создать клиента</button>
+                </form>
+            </div>
 
-        <div>
-            <h3>Форма сообщения:</h3>
-            <form method="post" action="{% url 'mailing:message_create' %}">
-                {% csrf_token %}
-                {{ message_form.as_p }}
-                <button type="submit" class="btn btn-primary">Создать сообщение</button>
-            </form>
+            <div class="form-group mx-3">
+                <form method="post" action="{% url 'mailing:message_create' %}">
+                    {% csrf_token %}
+                    {{ message_form.as_p }}
+                    <button type="submit" class="btn btn-primary">Создать сообщение</button>
+                </form>
+            </div>
         </div>
-
-        <div>
-            <h3>Форма рассылки:</h3>
-            <form method="post" action="{% url 'mailing:mailing_create' %}">
-                {% csrf_token %}
-                {{ mailing_form.as_p }}
-                <button type="submit" class="btn btn-primary">Создать рассылку</button>
-            </form>
-        </div>
-    
     </div>
     <!-------------->
-    
-    <!-------------->
-    <h1>Список рассылок</h1>
-    <ul class="list-group">
-        {% for mailing in mailings %}
-            <li class="list-group-item">
-                <h3>Рассылка №{{ mailing.id }} - {{ mailing.get_status_display }}</h3>
-                <p><strong>Время начала:</strong> {{ mailing.start_time }}</p>
-                <p><strong>Периодичность:</strong> {{ mailing.get_periodicity_display }}</p>
-                <p><strong>Сообщение:</strong> {{ mailing.message.subject }}</p>
-                <p><strong>Клиенты:</strong> {{ mailing.clients.all|join:", " }}</p>
-                <div>
-                    <a href="{% url 'mailing:mailing_detail' mailing.pk %}" class="btn btn-primary">Детали</a>
-                    <a href="{% url 'mailing:mailing_update' mailing.pk %}" class="btn btn-secondary">Редактировать</a>
-                    <a href="{% url 'mailing:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
-                    <a href="{% url 'mailing:mailing_attempt_list' mailing.pk %}" class="btn btn-warning">Попытки рассылки</a>
-                </div>
-            </li>
-        {% empty %}
-            <li class="list-group-item">Пока нет рассылок.</li>
-        {% endfor %}
-    </ul>
 
-    <a href="{% url 'mailing:mailing_create' %}" class="btn btn-success mt-3">Создать новую рассылку</a>
     <!-------------->
-    
-    
+    <h3>Список рассылок</h3>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Название</th>
+            <th>Статус</th>
+            <th>Время начала</th>
+            <th>Время завершения</th>
+            <th>Периодичность</th>
+            <th>Сообщение</th>
+            <th>Количество клиентов</th>
+
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for mailing in mailings %}
+            <tr>
+                <td>{{ mailing.description }}</td>
+                <td>{{ mailing.get_status_display }}</td>
+                <td>{{ mailing.start_time }}</td>
+                <td>{{ mailing.actual_end_time }}</td>
+                <td>{{ mailing.get_periodicity_display }}</td>
+
+                <td>
+                    {% if mailing.message %}
+                        <a href="{% url 'mailing:message_detail' mailing.message.pk %}" class="btn btn-primary btn-sm">Подробнее</a>
+                    {% else %}
+                        Нет сообщения
+                    {% endif %}
+                </td>
+                <td>{{ mailing.clients.count }}</td>
+                <td class="text-lg-start align-middle">
+                    <div class="btn-group" role="group" aria-label="Actions">
+                        <a href="{% url 'mailing:mailing_update' mailing.pk %}" class="btn btn-secondary btn-sm">Редактировать</a>
+                        <a href="{% url 'mailing:mailing_attempt_list' mailing.pk %}" class="btn btn-warning btn-sm">Попытки</a>
+                        <a href="{% url 'mailing:mailing_delete' mailing.pk %}"
+                           class="btn btn-danger btn-sm">Удалить</a>
+                    </div>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="7">Пока нет рассылок.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-end mt-3">
+        <a href="{% url 'mailing:mailing_create' %}" class="btn btn-success" style="margin-right: 70px;">Создать новую
+            рассылку</a>
+    </div>
+    <!-------------->
+
 {% endblock %}
