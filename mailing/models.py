@@ -1,10 +1,15 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
+
+User = get_user_model()
+NULLABLE = {"blank": True, "null": True}
 
 class Client(models.Model):
     email = models.EmailField(verbose_name="e-mail адрес", unique=True)
     full_name = models.CharField(verbose_name="Ф.И.О клиента", max_length=255)
     comment = models.TextField(verbose_name="комментарий", blank=True, null=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clients', **NULLABLE)
 
     def __str__(self):
         return self.full_name
@@ -13,6 +18,7 @@ class Client(models.Model):
 class Message(models.Model):
     subject = models.CharField(verbose_name="Тема", max_length=255)
     body = models.TextField(verbose_name="Сообщение", blank=True, null=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages', **NULLABLE)
 
     def __str__(self):
         return self.subject
@@ -37,6 +43,7 @@ class Mailing(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, verbose_name="сообщение")
     clients = models.ManyToManyField(Client, verbose_name="клиенты")
     actual_end_time = models.DateTimeField(verbose_name="дата завершения рассылки", blank=True, null=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mailings', **NULLABLE)
 
     def __str__(self):
         return f'Mailing {self.id} - {self.status}'

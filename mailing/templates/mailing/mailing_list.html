@@ -6,19 +6,15 @@
         <h3>Добавляйте клиентов и сообщения для новых рассылок:</h3>
         <div class="d-flex justify-content-center">
             <div class="form-group mx-3">
-                <form method="post" action="{% url 'mailing:client_create' %}">
-                    {% csrf_token %}
-                    {{ client_form.as_p }}
-                    <button type="submit" class="btn btn-primary">Создать клиента</button>
-                </form>
+
+                    <a href="{% url 'mailing:client_list' %}" class="btn btn-primary my-0">Клиенты</a>
+
             </div>
 
             <div class="form-group mx-3">
-                <form method="post" action="{% url 'mailing:message_create' %}">
-                    {% csrf_token %}
-                    {{ message_form.as_p }}
-                    <button type="submit" class="btn btn-primary">Создать сообщение</button>
-                </form>
+
+                    <a href="{% url 'mailing:message_list' %}" class="btn btn-primary my-0">Сообщения</a>
+
             </div>
         </div>
     </div>

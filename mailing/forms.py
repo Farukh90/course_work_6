@@ -1,45 +1,67 @@
-from django.forms import ModelForm, forms, BooleanField
+from django.forms import ModelForm, BooleanField
 from mailing.models import Client, Message, Mailing, MailingAttempt
-
 
 class StyleFormMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for fild_name,  fild in self.fields.items():
-            if isinstance(fild, BooleanField):
-                fild.widget.attrs['class']  = 'form-check-input'
+        for field_name, field in self.fields.items():
+            if isinstance(field, BooleanField):
+                field.widget.attrs['class'] = 'form-check-input'
             else:
-                fild.widget.attrs['class'] = 'form-control'
+                field.widget.attrs['class'] = 'form-control'
 
 
 class ClientForm(StyleFormMixin, ModelForm):
     class Meta:
         model = Client
-        fields = "__all__"
-        # exclude = ("views_counter", "owner")
+        exclude = ("owner",)
+
+    def save(self, commit=True, owner=None):
+        instance = super().save(commit=False)
+        if owner:
+            instance.owner = owner
+        if commit:
+            instance.save()
+        return instance
 
 
 class MessageForm(StyleFormMixin, ModelForm):
     class Meta:
         model = Message
-        fields = "__all__"
+        exclude = ("owner",)
+
+    def save(self, commit=True, owner=None):
+        instance = super().save(commit=False)
+        if owner:
+            instance.owner = owner
+        if commit:
+            instance.save()
+        return instance
 
 
 class MailingForm(StyleFormMixin, ModelForm):
     class Meta:
         model = Mailing
-        fields = "__all__"
+        exclude = ("owner",)
+
+    def save(self, commit=True, owner=None):
+        instance = super().save(commit=False)
+        if owner:
+            instance.owner = owner
+        if commit:
+            instance.save()
+        return instance
 
 
 class MailingAttemptForm(StyleFormMixin, ModelForm):
     class Meta:
-        Mailing = MailingAttempt
+        model = MailingAttempt
         fields = "__all__"
 
-
-# class ProductModeratorForm(StyleFormMixin, ModelForm):
-#     class Meta:
-#         model = Product
-#         fields = ("is_published", "description", "category")
-
-
+    def save(self, commit=True, owner=None):
+        instance = super().save(commit=False)
+        if owner:
+            instance.owner = owner
+        if commit:
+            instance.save()
+        return instance

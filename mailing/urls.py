@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.decorators.cache import cache_page
 
 from blog.views import BlogDetailView
 from .views import (
@@ -15,7 +16,7 @@ app_name = 'mailing'
 
 
 urlpatterns = [
-    path('', HomePageView.as_view(), name='index'),
+    path('', cache_page(3)(HomePageView.as_view()), name='index'),
     path('clients/', ClientListView.as_view(), name='client_list'),
     path('clients/<int:pk>/', ClientDetailView.as_view(), name='client_detail'),
     path('clients/create/', ClientCreateView.as_view(), name='client_create'),

@@ -13,6 +13,7 @@ from blog.models import BlogPost
 from config import settings
 from .forms import ClientForm, MessageForm, MailingForm, MailingAttemptForm
 from .models import Client, Message, Mailing, MailingAttempt
+from .services import get_cached_articles
 from .utils import create_contact_dict, read_JSON_data, write_JSON_data
 
 
@@ -23,11 +24,7 @@ class HomePageView(View):
         active_mailings = Mailing.objects.filter(status='started').count()
         unique_clients_count = Client.objects.distinct().count()
 
-        all_articles = BlogPost.objects.filter(is_published=True)
-        if all_articles.exists():
-            random_articles = random.sample(list(all_articles), min(3, all_articles.count()))
-        else:
-            random_articles = []
+        random_articles = get_cached_articles()
 
         context = {
             'total_mailings': total_mailings,
@@ -39,10 +36,12 @@ class HomePageView(View):
         return render(request, 'mailing/index.html', context)
 
 
-
 class ClientListView(ListView):
     model = Client
     template_name = 'mailing/client_list.html'
+
+    def get_queryset(self):
+        return Client.objects.filter(owner=self.request.user)
 
 
 class ClientDetailView(DetailView):
@@ -55,6 +54,10 @@ class ClientCreateView(CreateView):
     form_class = ClientForm
     template_name = 'mailing/client_form.html'
     success_url = reverse_lazy('mailing:client_list')
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 
 class ClientUpdateView(UpdateView):
@@ -75,6 +78,9 @@ class MessageListView(ListView):
     template_name = 'mailing/message_list.html'
     context_object_name = 'messages'
 
+    def get_queryset(self):
+        return Message.objects.filter(owner=self.request.user)
+
 
 class MessageDetailView(DetailView):
     model = Message
@@ -93,8 +99,8 @@ class MessageCreateView(CreateView):
     success_url = reverse_lazy('mailing:message_list')
 
     def form_valid(self, form):
-        form.save()
-        return redirect('mailing:message_list')
+        form.save(owner=self.request.user)
+        return redirect(self.success_url)
 
 
 class MessageUpdateView(UpdateView):
@@ -115,9 +121,13 @@ class MailingListView(LoginRequiredMixin, ListView):
     template_name = 'mailing/mailing_list.html'
     context_object_name = 'mailings'
 
+    def get_queryset(self):
+        return Mailing.objects.filter(owner=self.request.user)
+
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return HttpResponseNotFound("<h1>404 Not Found</h1><p>Страница не найдена. Пожалуйста, авторизуйтесь для доступа.</p>")
+            return HttpResponseNotFound(
+                "<h1>404 Not Found</h1><p>Страница не найдена. Пожалуйста, авторизуйтесь для доступа.</p>")
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -131,6 +141,10 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
     form_class = MailingForm
     template_name = 'mailing/mailing_form.html'
     success_url = reverse_lazy('mailing:mailing_list')
+
+    def form_valid(self, form):
+        form.save(owner=self.request.user)
+        return redirect(self.success_url)
 
 
 class MailingUpdateView(LoginRequiredMixin, UpdateView):
@@ -207,8 +221,8 @@ class MailingAttemptDeleteView(DeleteView):
     success_url = reverse_lazy('mailing:mailing_list')
 
 
-
 contacts_base_file = r"contacts.json"
+
 
 class ContactView(View):
     template_name = "mailing/contacts.html"
