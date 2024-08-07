@@ -1,0 +1,44 @@
+{% extends 'mailing/base.html' %}
+
+{% load static %}
+
+{% block content %}
+    <!-- Статистика -->
+    <div class="container">
+    <div class="statistics">
+        <h2>Статистика</h2>
+        <div class="stat-item">
+            <p><strong>Количество рассылок всего:</strong> {{ total_mailings }}</p>
+        </div>
+        <div class="stat-item">
+            <p><strong>Количество активных рассылок:</strong> {{ active_mailings }}</p>
+        </div>
+        <div class="stat-item">
+            <p><strong>Количество уникальных клиентов для рассылок:</strong> {{ unique_clients_count }}</p>
+        </div>
+    </div>
+    </div>
+
+    <!-- Случайные статьи -->
+    <div class="container">
+        <div class="random-articles">
+            <h2>Случайные статьи</h2>
+            <div class="row articles-grid">
+                {% for blog in random_articles %}
+                    <div class="col-md-3">
+                        <div class="card" style="width: 18rem;">
+                            {% if blog.preview_image %}
+                                <img src="{{ blog.preview_image.url }}" class="card-img-top" alt="{{ blog.title }}">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ blog.title }}</h5>
+                                <p class="card-text">{{ blog.content|truncatewords:20 }}...</p>
+                                <a href="{% url 'blog:blog_detail' blog.slug %}" class="btn btn-primary">Читать полностью</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

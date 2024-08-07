@@ -1,0 +1,36 @@
+{% extends 'mailing/base.html' %}
+{% load my_tags %}
+{% block content %}
+
+<div class="row mt-4">
+            <div class="col-12 text-center">
+                <a class="btn btn-success btn-lg" href="{% url 'blog:blog_create' %}" role="button">Создать</a>
+            </div>
+        </div>
+<div class="album py-5 bg-body-tertiary">
+
+    <div class="container">
+        <div class="row">
+            {% for blog in blogpost_list %}
+            <div class="col-6 mb-4">
+                <div class="card shadow-sm">
+                    <img src="{{ blog.photo | media_filter }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ blog.title }}</h5>
+                        <p class="card-text">{{ blog.content | slice:":150" }}...</p>
+                        <p class="card-text">Просмотров: {{ blog.views_count }}</p>
+                        <p class="card-text">Дата публикации: {{ blog.created_at }}</p>
+                        <div class="btn-group">
+                            <a class="btn btn-primary" href="{% url 'blog:blog_detail' blog.slug %}" role="button">Посмотреть</a>
+                            <a class="btn btn-warning" href="{% url 'blog:blog_edit' blog.slug %}" role="button">Редактировать</a>
+                            <a class="btn btn-danger" href="{% url 'blog:blog_delete' blog.slug %}" role="button">Удалить</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

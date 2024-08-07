@@ -2,9 +2,9 @@
 {% extends 'mailing/base.html' %}
 {% block content %}
   <h1>{{ object.full_name }}</h1>
-  <p>Email: {{ object.email }}</p>
-  <p>Comment: {{ object.comment }}</p>
-  <a href="{% url 'mailing:client_update' object.pk %}">Edit</a>
-  <a href="{% url 'mailing:client_delete' object.pk %}">Delete</a>
-  <a href="{% url 'mailing:client_list' %}">Back to list</a>
+  <p>Почта: {{ object.email }}</p>
+  <p>Комментарий: {{ object.comment }}</p>
+  <a href="{% url 'mailing:client_update' object.pk %}">Редактировать</a>
+  <a href="{% url 'mailing:client_delete' object.pk %}">Удалить</a>
+  <a href="{% url 'mailing:client_list' %}">Назад</a>
 {% endblock %}

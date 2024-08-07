@@ -3,7 +3,7 @@
 {% block content %}
   <h1>Детали попытки рассылки №{{ object.id }}</h1>
   <p><strong>Время создания:</strong> {{ object.timestamp }}</p>
-  <p><strong>Статус:</strong> {{ object.status }}</p>
+  <p><strong>Статус:</strong> {{ object.get_status_display }}</p>
   <p><strong>Ответ сервера:</strong> {{ object.server_response }}</p>
   <a href="{% url 'mailing:mailing_attempt_update' mailing_id=object.mailing.id pk=object.pk %}" class="btn btn-secondary">Редактировать</a>
   <a href="{% url 'mailing:mailing_attempt_delete' mailing_id=object.mailing.id pk=object.pk %}" class="btn btn-danger">Удалить</a>
