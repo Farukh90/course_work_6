@@ -1,6 +1,5 @@
 import logging
 import smtplib
-
 from django.utils import timezone
 import pytz
 from mailing.models import Mailing, MailingAttempt
@@ -47,6 +46,7 @@ def check_and_send_mailings_hard():
 
 
 def should_send_mailing(mailing, now):
+    pass
     last_attempt = mailing.attempts.order_by('-timestamp').first()
     if not last_attempt:
         return True
@@ -125,7 +125,6 @@ def read_JSON_data(file_path: str) -> list:
 def write_JSON_data(file_path: str, data) -> None:
     with open(file_path, "w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
-
 
 
 

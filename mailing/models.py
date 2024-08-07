@@ -62,6 +62,10 @@ class Mailing(models.Model):
         ordering = ['-start_time']
         verbose_name = 'Mailing'
         verbose_name_plural = 'Mailings'
+        permissions = [
+            ('can_view_mailing', 'can view mailing'),
+            ('can_edit_mailing', 'can edit mailing'),
+        ]
 
 
 class MailingAttempt(models.Model):

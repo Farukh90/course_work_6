@@ -53,10 +53,10 @@ class MailingForm(StyleFormMixin, ModelForm):
         return instance
 
 
-class MailingAttemptForm(StyleFormMixin, ModelForm):
+class MailingModeratorForm(StyleFormMixin, ModelForm):
     class Meta:
-        model = MailingAttempt
-        fields = "__all__"
+        model = Mailing
+        fields = ("status",)
 
     def save(self, commit=True, owner=None):
         instance = super().save(commit=False)
@@ -65,3 +65,9 @@ class MailingAttemptForm(StyleFormMixin, ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class MailingAttemptForm(StyleFormMixin, ModelForm):
+    class Meta:
+        model = MailingAttempt
+        fields = "__all__"

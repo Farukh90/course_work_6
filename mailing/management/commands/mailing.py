@@ -18,6 +18,9 @@ class Command(BaseCommand):
         mailings = Mailing.objects.filter(status__in=['created', 'started'])
 
         for mailing in mailings:
+            clients = mailing.clients.all()
+            for client in clients:
+                print(client.email)
             if mailing.status == 'completed':
                 continue
 
