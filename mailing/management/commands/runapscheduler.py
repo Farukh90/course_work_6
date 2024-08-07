@@ -10,14 +10,14 @@ from mailing.utils import check_and_send_mailings
 
 logger = logging.getLogger(__name__)
 
+
 @util.close_old_connections
 def delete_old_job_executions(max_age=604_800):
     DjangoJobExecution.objects.delete_old_job_executions(max_age)
 
 
-
 class Command(BaseCommand):
-    help = 'Runs APScheduler'
+    help = "Runs APScheduler"
 
     def handle(self, *args, **options):
         scheduler = BlockingScheduler(timzone=settings.TIME_ZONE)
@@ -30,14 +30,13 @@ class Command(BaseCommand):
             seconds=10,
             max_instances=1,
             replace_existing=True,
-
         )
 
         logger.info("added job: my_job")
 
         try:
             logger.info("starting scheduler")
-            print('шедулер запущен')
+            print("шедулер запущен")
             scheduler.start()
         except KeyboardInterrupt:
             logger.info("шедулер остановлен")

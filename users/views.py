@@ -11,6 +11,7 @@ from users.forms import UserRegisterForm, PasswordResetForm
 from users.models import User
 from config.settings import EMAIL_HOST_USER
 
+
 class UserCreateView(CreateView):
     model = User
     form_class = UserRegisterForm
@@ -23,19 +24,22 @@ class UserCreateView(CreateView):
         user.token = token
         user.save()
         host = self.request.get_host()
-        url = f'http://{host}/users/email-confirmation/{token}/'
+        url = f"http://{host}/users/email-confirmation/{token}/"
         try:
             send_mail(
                 subject="Подтверждение почты",
                 message=f"Привет! , перейди по ссылке для подтверждения почты {url}",
                 from_email=EMAIL_HOST_USER,
-                recipient_list=[user.email]
+                recipient_list=[user.email],
             )
         except Exception as e:
             user.delete()
-            messages.error(self.request, 'Ошибка при отправке письма. Попробуйте еще раз.')
-            return redirect('users:register')
+            messages.error(
+                self.request, "Ошибка при отправке письма. Попробуйте еще раз."
+            )
+            return redirect("users:register")
         return super().form_valid(form)
+
 
 def email_verification(request, token):
     user = get_object_or_404(User, token=token)
@@ -44,15 +48,17 @@ def email_verification(request, token):
     user.save()
     return redirect(reverse("users:login"))
 
+
 def generate_password(length=8):
     characters = string.ascii_letters + string.digits
-    return ''.join(random.choice(characters) for i in range(length))
+    return "".join(random.choice(characters) for i in range(length))
+
 
 def password_reset_request(request):
     if request.method == "POST":
         form = PasswordResetForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email']
+            email = form.cleaned_data["email"]
             try:
                 user = User.objects.get(email=email)
                 new_password = generate_password()
@@ -60,18 +66,22 @@ def password_reset_request(request):
                 user.save()
                 try:
                     send_mail(
-                        'Восстановление пароля',
-                        f'Ваш новый пароль: {new_password}',
+                        "Восстановление пароля",
+                        f"Ваш новый пароль: {new_password}",
                         EMAIL_HOST_USER,
                         [user.email],
                         fail_silently=False,
                     )
-                    messages.success(request, f'Новый пароль отправлен на почтовый ящик {user.email}')
+                    messages.success(
+                        request, f"Новый пароль отправлен на почтовый ящик {user.email}"
+                    )
                 except Exception as e:
-                    messages.error(request, 'Ошибка при отправке письма. Попробуйте еще раз.')
-                return redirect('users:login')
+                    messages.error(
+                        request, "Ошибка при отправке письма. Попробуйте еще раз."
+                    )
+                return redirect("users:login")
             except User.DoesNotExist:
-                messages.error(request, f'Пользователь с почтой {email} не существует')
+                messages.error(request, f"Пользователь с почтой {email} не существует")
     else:
         form = PasswordResetForm()
-    return render(request, 'users/password_reset.html', {'form': form})
+    return render(request, "users/password_reset.html", {"form": form})

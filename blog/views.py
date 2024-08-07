@@ -10,6 +10,7 @@ from django.views.generic import (
 from blog.models import BlogPost
 from blog.forms import BlogPostForm  # Импортируйте вашу форму
 
+
 class BlogCreateView(CreateView):
     model = BlogPost
     form_class = BlogPostForm
@@ -28,16 +29,18 @@ class BlogCreateView(CreateView):
         blog.save()
         return super().form_valid(form)
 
+
 class BlogListView(ListView):
     model = BlogPost
-    template_name = 'blog/blogpost_list.html'  # Укажите ваш шаблон
-    context_object_name = 'blogpost_list'
+    template_name = "blog/blogpost_list.html"  # Укажите ваш шаблон
+    context_object_name = "blogpost_list"
     form_class = BlogPostForm  # Если используете форму
     extra_context = {"list_name": "Блог"}
 
     def get_queryset(self):
         queryset = super().get_queryset()
         return queryset.filter(is_published=True)
+
 
 class BlogDetailView(DetailView):
     model = BlogPost
@@ -48,12 +51,14 @@ class BlogDetailView(DetailView):
         obj.save()
         return obj
 
+
 class BlogUpdateView(UpdateView):
     model = BlogPost
     form_class = BlogPostForm  # Используйте вашу форму
 
     def get_success_url(self):
         return reverse_lazy("blog:blog_detail", kwargs={"slug": self.object.slug})
+
 
 class BlogDeleteView(DeleteView):
     model = BlogPost

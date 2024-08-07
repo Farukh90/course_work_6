@@ -13,7 +13,7 @@ def get_cached_articles():
         else:
             return []
 
-    key = 'index_random_articles'
+    key = "index_random_articles"
     articles = cache.get(key)
 
     if articles is not None:
