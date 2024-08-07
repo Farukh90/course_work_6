@@ -10,5 +10,6 @@ python manage.py csu
 admin@mail.com
 пароль 123
 
-
+для отправки рассылки через командную строку команда:
+python manage.py check_and_send_mailings
 
