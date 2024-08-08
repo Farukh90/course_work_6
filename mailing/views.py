@@ -144,10 +144,20 @@ class MessageUpdateView(UpdateView):
     success_url = reverse_lazy("mailing:mailing_list")
 
 
-class MessageDeleteView(DeleteView):
+class MessageDeleteView(LoginRequiredMixin, DeleteView):
     model = Message
     template_name = "mailing/message_confirm_delete.html"
     success_url = reverse_lazy("mailing:message_list")
+
+    def get_object(self, queryset=None):
+        # Получаем объект рассылки
+        obj = super().get_object(queryset)
+
+        # Проверяем, является ли текущий пользователь владельцем
+        if obj.owner != self.request.user:
+            # Если нет, возвращаем 403 Forbidden
+            raise PermissionDenied("Вы не можете удалить эту рассылку.")
+        return obj
 
 
 class MailingListView(LoginRequiredMixin, ListView):
