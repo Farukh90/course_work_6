@@ -95,6 +95,17 @@ class ClientDeleteView(DeleteView):
     template_name = "mailing/client_confirm_delete.html"
     success_url = reverse_lazy("mailing:client_list")
 
+    def get_object(self, queryset=None):
+        # Получаем объект рассылки
+        obj = super().get_object(queryset)
+
+        # Проверяем, является ли текущий пользователь владельцем
+        if obj.owner != self.request.user:
+            # Если нет, возвращаем 403 Forbidden
+            raise PermissionDenied("Вы не можете удалить эту рассылку.")
+
+        return obj
+
 
 class MessageListView(LoginRequiredMixin, ListView):
     model = Message
@@ -143,7 +154,7 @@ class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
     template_name = "mailing/mailing_list.html"
     context_object_name = "mailings"
-    # permission_required = 'mailing.view_mailing'
+    permission_required = 'mailing.view_mailing'
 
     def get_queryset(self):
         user = self.request.user
@@ -217,6 +228,17 @@ class MailingDeleteView(LoginRequiredMixin, DeleteView):
     model = Mailing
     template_name = "mailing/mailing_confirm_delete.html"
     success_url = reverse_lazy("mailing:mailing_list")
+
+    def get_object(self, queryset=None):
+        # Получаем объект рассылки
+        obj = super().get_object(queryset)
+
+        # Проверяем, является ли текущий пользователь владельцем
+        if obj.owner != self.request.user:
+            # Если нет, возвращаем 403 Forbidden
+            raise PermissionDenied("Вы не можете удалить эту рассылку.")
+
+        return obj
 
 
 class MailingAttemptListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
